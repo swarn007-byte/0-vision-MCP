@@ -22,9 +22,11 @@ def _load_env() -> None:
 
 _load_env()
 
-
-async def analyze_image(prompt: str, image_file: str) -> str:
-    image_encoded = await base64converter(image_file)
+async def analyze_image(prompt: str, image: str) -> str:
+    if image.startswith(("http://", "https://")):
+        image_encoded = image
+    else:
+        image_encoded = await base64converter(image)
 
     body = json.dumps(
         {

@@ -1,12 +1,38 @@
 import base64
 import os
+from pathlib import Path
 
 
-async def base64converter(image_file: str) -> str:
-    if not os.path.exists(image_file):
-        raise FileNotFoundError(f"File not found: {image_file}")
+async def base64converter(image: str) -> str:
+    try:
+        if not os.path.exists(image):
+            raise FileNotFoundError(f"File not found: {image}")
 
-    with open(image_file, "rb") as file:
-        image_buffer = file.read()
+        image_size = Path(image).stat().st_size
+        max_size = 30 * 1024 * 1024
 
-    return f"data:image/jpeg;base64,{base64.b64encode(image_buffer).decode('utf-8')}"
+        if image_size > max_size:
+            raise ValueError(f"{image} exceeds 30 MB limit")
+
+        mime_types = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".gif": "image/gif",
+            ".webp": "image/webp",
+            ".bmp": "image/bmp",
+        }
+
+        ext = Path(image).suffix.lower()
+        mime = mime_types.get(ext)
+
+        if not mime:
+            raise ValueError(f"{ext} extension is not supported")
+
+        with open(image, "rb") as img:
+            image_buffer = img.read()
+
+        return f"data:{mime};base64,{base64.b64encode(image_buffer).decode('utf-8')}"
+
+    except Exception as error:
+        raise RuntimeError(f"Failed to convert image to base64: {error}") from error
