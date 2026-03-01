@@ -20,9 +20,22 @@ def _load_env() -> None:
             os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
+def _get_required_env(name: str) -> str:
+    value = os.environ.get(name)
+
+    if not value:
+        raise ValueError(f"Missing required environment variable: {name}")
+
+    return value
+
+
 _load_env()
 
+
 async def analyze_image(prompt: str, image: str) -> str:
+    api_key = _get_required_env("OPENROUTER_API_KEY")
+    model = _get_required_env("OPENROUTER_MODEL")
+
     if image.startswith(("http://", "https://")):
         image_encoded = image
     else:
@@ -30,7 +43,7 @@ async def analyze_image(prompt: str, image: str) -> str:
 
     body = json.dumps(
         {
-            "model": os.environ.get("OPENROUTER_MODEL"),
+            "model": model,
             "max_tokens": 500,
             "messages": [
                 {
@@ -49,12 +62,12 @@ async def analyze_image(prompt: str, image: str) -> str:
         data=body,
         method="POST",
         headers={
-            "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         },
     )
 
-   with urllib.request.urlopen(request, timeout=60) as response:
+    with urllib.request.urlopen(request, timeout=60) as response:
         data = json.loads(response.read().decode("utf-8"))
 
     print(json.dumps(data, indent=2), file=sys.stderr)
