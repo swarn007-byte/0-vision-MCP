@@ -54,7 +54,7 @@ async def analyze_image(prompt: str, image: str) -> str:
         },
     )
 
-    with urllib.request.urlopen(request) as response:
+   with urllib.request.urlopen(request, timeout=60) as response:
         data = json.loads(response.read().decode("utf-8"))
 
     print(json.dumps(data, indent=2), file=sys.stderr)
