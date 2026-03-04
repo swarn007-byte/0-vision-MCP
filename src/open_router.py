@@ -1,6 +1,6 @@
 import json
 import os
-import sys
+import urllib.error
 import urllib.request
 
 from base64converter import base64converter
@@ -30,6 +30,25 @@ def _get_required_env(name: str) -> str:
 
 
 _load_env()
+
+
+def _read_openrouter_error(error: urllib.error.HTTPError) -> str:
+    try:
+        return error.read().decode("utf-8")
+    except Exception:
+        return "no response body"
+
+
+def _extract_content(data: dict) -> str:
+    try:
+        content = data["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError) as error:
+        raise RuntimeError("OpenRouter returned an unexpected response") from error
+
+    if not content:
+        raise RuntimeError("OpenRouter returned an empty response")
+
+    return content
 
 
 async def analyze_image(prompt: str, image: str) -> str:
@@ -67,8 +86,17 @@ async def analyze_image(prompt: str, image: str) -> str:
         },
     )
 
-    with urllib.request.urlopen(request, timeout=60) as response:
-        data = json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        detail = _read_openrouter_error(error)
+        raise RuntimeError(f"OpenRouter request failed with status {error.code}: {detail}") from error
+    except urllib.error.URLError as error:
+        raise RuntimeError(f"OpenRouter request failed: {error.reason}") from error
+    except TimeoutError as error:
+        raise RuntimeError("OpenRouter request timed out after 60 seconds") from error
+    except json.JSONDecodeError as error:
+        raise RuntimeError("OpenRouter returned invalid JSON") from error
 
-    print(json.dumps(data, indent=2), file=sys.stderr)
-    return data["choices"][0]["message"]["content"]
+    return _extract_content(data)

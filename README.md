@@ -47,7 +47,27 @@ Analyze any image using a vision model and get a natural language description.
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `prompt` | string | yes | What you want to know about the image |
-| `image_file` | string | yes | Absolute path to the image file |
+| `image_file` | string | yes | Local image path or http/https image URL |
+
+### `screen`
+
+Capture the current screen and return the saved screenshot path.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `action` | string | no | Use `capture` |
+| `target` | string | no | Reserved for capturing a specific app/window |
+| `pid` | number | no | Reserved for capturing a specific process |
+
+Example response:
+
+```json
+{
+  "image": "/tmp/vision-mcp-captures/capture_123.png",
+  "width": 1440,
+  "height": 900
+}
+```
 
 ## Testing with MCP Inspector
 
@@ -61,5 +81,6 @@ npx @modelcontextprotocol/inspector python3 src/index.py
 src/
 ├── index.py
 ├── open_router.py
-└── base64converter.py
+├── base64converter.py
+└── screen.py
 ```
