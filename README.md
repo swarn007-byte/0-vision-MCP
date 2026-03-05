@@ -18,7 +18,7 @@ Edit `.env`:
 
 ```env
 OPENROUTER_API_KEY=sk-or-v1-...
-OPENROUTER_MODEL=google/gemini-2.0-flash-lite:free
+OPENROUTER_MODEL=google/gemini-3.1-flash-lite
 ```
 
 ## MCP Client Config
@@ -31,7 +31,7 @@ OPENROUTER_MODEL=google/gemini-2.0-flash-lite:free
       "args": ["/absolute/path/to/0eye-vision-MCP/src/index.py"],
       "env": {
         "OPENROUTER_API_KEY": "sk-or-v1-...",
-        "OPENROUTER_MODEL": "google/gemini-2.0-flash-lite:free"
+        "OPENROUTER_MODEL": "google/gemini-3.1-flash-lite"
       }
     }
   }
